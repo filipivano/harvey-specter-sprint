@@ -1,6 +1,5 @@
-"use client";
-
-import { useState } from "react";
+import { client } from "@/sanity/lib/client";
+import MobileMenu from "@/components/MobileMenu";
 
 const HERO_BG = "/hero-image-5.png";
 
@@ -17,13 +16,6 @@ const SERVICES = [
   { num: "[ 2 ]", title: "Web design & Dev",   img: "https://www.figma.com/api/mcp/asset/e0e3f9c2-5556-4eff-acc5-b77136283f60" },
   { num: "[ 3 ]", title: "Marketing",          img: "https://www.figma.com/api/mcp/asset/c488ae2d-94b8-483c-87ec-5aee4f90fda6" },
   { num: "[ 4 ]", title: "Photography",        img: "https://www.figma.com/api/mcp/asset/b9b1068a-ee07-420d-ab74-dc58937c7411" },
-] as const;
-
-const PROJECTS = [
-  { title: "Surfers Paradise",   tags: ["Social Media", "Photography"], img: "https://www.figma.com/api/mcp/asset/59208767-6b41-46d5-950b-9e5c70e6a203", tall: true  },
-  { title: "Cyberpunk Caffe",    tags: ["Social Media", "Photography"], img: "https://www.figma.com/api/mcp/asset/3e3d2caf-9b4c-474e-9305-419d76121adc", tall: false },
-  { title: "Agency 976",         tags: ["Social Media", "Photography"], img: "https://www.figma.com/api/mcp/asset/df948448-4c15-490a-81e2-a7177a05ab37", tall: false },
-  { title: "Minimal Playground", tags: ["Social Media", "Photography"], img: "https://www.figma.com/api/mcp/asset/3edf2601-17ec-422d-9e89-663c29e3495b", tall: true  },
 ] as const;
 
 const TESTIMONIALS = [
@@ -64,52 +56,33 @@ const NEWS_DESC = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed 
 const SERVICE_DESC =
   "We are a creative studio that loves making beautiful websites and premium products. We've won some awards for our work. We're really good at creating brands, designing cool stuff, and making things work just right.";
 
-export default function Home() {
-  const [menuOpen, setMenuOpen] = useState(false);
+type PortfolioItem = {
+  _id: string;
+  title: string;
+  tags: string[];
+  img: string | null;
+  tall: boolean;
+  link?: string | null;
+};
+
+const PORTFOLIO_QUERY = `*[_type == "portfolioItem"] | order(order asc) {
+  _id,
+  title,
+  tags,
+  "img": select(
+    defined(coverImage.asset) => coverImage.asset->url,
+    coverImageUrl
+  ),
+  tall,
+  link
+}`;
+
+export default async function Home() {
+  const projects = await client.fetch<PortfolioItem[]>(PORTFOLIO_QUERY);
 
   return (
     <>
     <main>
-      {/* ── Mobile menu overlay ── */}
-      {menuOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black flex flex-col px-4 py-6"
-          style={{ fontFamily: "var(--font-inter)" }}
-        >
-          <div className="flex items-center justify-between">
-            <span className="font-semibold text-base capitalize tracking-[-0.04em] text-white">
-              H.Studio
-            </span>
-            <button onClick={() => setMenuOpen(false)} aria-label="Close menu">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <line x1="4" y1="4" x2="20" y2="20" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                <line x1="20" y1="4" x2="4" y2="20" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </button>
-          </div>
-
-          <ul className="flex flex-col gap-8 mt-12 list-none">
-            {NAV_LINKS.map((link) => (
-              <li key={link}>
-                <a
-                  href={`#${link.toLowerCase()}`}
-                  className="text-white font-semibold text-[32px] capitalize tracking-[-0.04em] hover:opacity-70 transition-opacity"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  {link}
-                </a>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-auto">
-            <button className="flex items-center justify-center bg-white text-black text-[14px] font-medium tracking-[-0.04em] px-4 py-3 rounded-[24px] w-full">
-              Let&apos;s talk
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* ── Hero ── */}
       <section
         className="
@@ -141,14 +114,8 @@ export default function Home() {
             H.Studio
           </span>
 
-          {/* Mobile: hamburger */}
-          <button className="md:hidden" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <line x1="3" y1="6"  x2="21" y2="6"  stroke="black" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="3" y1="12" x2="21" y2="12" stroke="black" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="3" y1="18" x2="21" y2="18" stroke="black" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </button>
+          {/* Mobile: hamburger + overlay (client component) */}
+          <MobileMenu />
 
           {/* Desktop: nav links */}
           <ul className="hidden md:flex items-center gap-14 list-none font-semibold text-base capitalize tracking-[-0.04em] text-black">
@@ -515,8 +482,15 @@ export default function Home() {
 
         {/* ── Mobile layout ── */}
         <div className="md:hidden flex flex-col gap-10">
-          {PROJECTS.map(({ title, tags, img }) => (
-            <ProjectCard key={title} title={title} tags={tags} img={img} tall={false} mobile />
+          {projects.map((project) => (
+            <ProjectCard
+              key={project._id}
+              title={project.title}
+              tags={project.tags}
+              img={project.img ?? ""}
+              tall={false}
+              mobile
+            />
           ))}
           <WorkCTA />
         </div>
@@ -545,17 +519,25 @@ export default function Home() {
           {/* Two staggered columns */}
           <div className="flex gap-6 items-end w-full">
             <div className="flex-1 flex flex-col">
-              <ProjectCard title={PROJECTS[0].title} tags={PROJECTS[0].tags} img={PROJECTS[0].img} tall />
-              <div className="mt-[80px]">
-                <ProjectCard title={PROJECTS[1].title} tags={PROJECTS[1].tags} img={PROJECTS[1].img} tall={false} />
-              </div>
+              {projects[0] && (
+                <ProjectCard title={projects[0].title} tags={projects[0].tags} img={projects[0].img ?? ""} tall={projects[0].tall} />
+              )}
+              {projects[1] && (
+                <div className="mt-[80px]">
+                  <ProjectCard title={projects[1].title} tags={projects[1].tags} img={projects[1].img ?? ""} tall={projects[1].tall} />
+                </div>
+              )}
               <div className="mt-[80px]">
                 <WorkCTA />
               </div>
             </div>
             <div className="flex-1 flex flex-col gap-[117px] pt-[240px]">
-              <ProjectCard title={PROJECTS[2].title} tags={PROJECTS[2].tags} img={PROJECTS[2].img} tall={false} />
-              <ProjectCard title={PROJECTS[3].title} tags={PROJECTS[3].tags} img={PROJECTS[3].img} tall />
+              {projects[2] && (
+                <ProjectCard title={projects[2].title} tags={projects[2].tags} img={projects[2].img ?? ""} tall={projects[2].tall} />
+              )}
+              {projects[3] && (
+                <ProjectCard title={projects[3].title} tags={projects[3].tags} img={projects[3].img ?? ""} tall={projects[3].tall} />
+              )}
             </div>
           </div>
 
@@ -832,7 +814,7 @@ export default function Home() {
 /* ── Project card ── */
 function ProjectCard({ title, tags, img, tall, mobile = false }: {
   title: string;
-  tags: readonly string[];
+  tags: string[];
   img: string;
   tall: boolean;
   mobile?: boolean;
