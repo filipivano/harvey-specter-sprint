@@ -33,12 +33,13 @@ export default function Navbar() {
       className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between py-6 px-4 md:px-8 md:h-[89px] md:py-0"
       style={{ fontFamily: "var(--font-inter)" }}
     >
-      <span
+      <a
+        href="/"
         className="font-semibold text-base capitalize tracking-[-0.04em] transition-colors duration-300"
         style={{ color: isDark ? "white" : "black" }}
       >
         H.Studio
-      </span>
+      </a>
 
       <MobileMenu isDark={isDark} />
       <NavLinks isDark={isDark} />
