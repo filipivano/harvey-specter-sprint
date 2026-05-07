@@ -80,14 +80,14 @@ export default async function NewsPage() {
               className="flex items-center justify-between w-full uppercase text-black font-light tracking-[-0.08em] leading-none whitespace-nowrap text-[96px]"
               style={{ fontFamily: "var(--font-inter)" }}
             >
-              <span>[{news.length}]</span>
               <span>Articles</span>
+              <span>[{news.length}]</span>
             </div>
 
             {/* News rows */}
             <div className="flex flex-col gap-[80px]">
               {news.map((item, i) => (
-                <NewsRow key={item._id} item={item} index={i} />
+                <NewsRow key={item._id} item={item} index={i} reversed={i % 2 === 0} />
               ))}
             </div>
           </div>
@@ -149,94 +149,70 @@ export default async function NewsPage() {
   );
 }
 
-function NewsRow({ item, index }: { item: NewsItem; index: number }) {
+function NewsRow({ item, index, reversed = false }: { item: NewsItem; index: number; reversed?: boolean }) {
   return (
-    <div className="flex flex-col gap-4 md:gap-6">
+    <div className={`group flex flex-col gap-6 md:gap-[60px] cursor-pointer ${reversed ? "md:flex-row-reverse" : "md:flex-row"}`}>
 
-      {/* Number + divider */}
-      <div className="flex flex-col gap-[9px]">
-        <p
-          className="text-[14px] font-normal leading-[1.1] text-[#1f1f1f] uppercase"
-          style={{ fontFamily: "var(--font-geist-mono)" }}
-        >
-          [ {index + 1} ]
-        </p>
-        <div className="w-full border-t border-[#1f1f1f]" />
-      </div>
+      {/* Text column */}
+      <div className="flex flex-col gap-4 flex-1 justify-start">
 
-      {/* Title */}
-      <p
-        className="text-[36px] md:text-[64px] font-bold italic leading-[1.0] text-black uppercase tracking-[-0.04em]"
-        style={{ fontFamily: "var(--font-inter)" }}
-      >
-        {item.title}
-      </p>
-
-      {/* Image + right column */}
-      <div className="flex flex-col gap-6 md:flex-row md:gap-8 md:items-start">
-
-        {/* Image */}
-        {item.img && (
-          <div className="w-full md:w-[480px] md:shrink-0 aspect-[4/3] overflow-hidden">
-            <img src={item.img} alt="" className="w-full h-full object-cover" />
-          </div>
+        {/* Date */}
+        {item.publishedAt && (
+          <p
+            className="text-[11px] font-normal text-[#999] uppercase tracking-[0.12em]"
+            style={{ fontFamily: "var(--font-geist-mono)" }}
+          >
+            {formatDate(item.publishedAt)}
+          </p>
         )}
 
-        {/* Meta + description + read more */}
-        <div className="flex flex-col gap-5 flex-1">
+        {/* Divider */}
+        <div className="w-full border-t border-[#1f1f1f]" />
 
-          {/* Category + date */}
-          <div className="flex gap-4 items-center">
-            {item.category && (
-              <span
-                className="text-[12px] font-normal text-[#1f1f1f] uppercase tracking-[0.04em]"
-                style={{ fontFamily: "var(--font-geist-mono)" }}
-              >
-                [ {item.category} ]
-              </span>
-            )}
-            {item.publishedAt && (
-              <span
-                className="text-[12px] font-normal text-[#999] uppercase tracking-[0.04em]"
-                style={{ fontFamily: "var(--font-geist-mono)" }}
-              >
-                {formatDate(item.publishedAt)}
-              </span>
-            )}
-          </div>
+        {/* Title */}
+        <p
+          className="text-[28px] md:text-[36px] font-black italic leading-[1.1] text-black uppercase tracking-[-0.03em] transition-transform duration-300 ease-out group-hover:translate-x-2"
+          style={{ fontFamily: "var(--font-inter)" }}
+        >
+          {item.title}
+        </p>
 
-          {/* Description in corner brackets */}
-          <div className="relative p-3">
-            <span className="absolute top-0 left-0 w-4 h-4 border-t border-l border-[#1f1f1f]" />
-            <span className="absolute top-0 right-0 w-4 h-4 border-t border-r border-[#1f1f1f]" />
-            <span className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-[#1f1f1f]" />
-            <span className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-[#1f1f1f]" />
-            <p
-              className="text-[14px] font-normal leading-[1.4] text-[#1f1f1f] tracking-[-0.04em]"
-              style={{ fontFamily: "var(--font-inter)" }}
-            >
-              {item.description}
-            </p>
-          </div>
+        {/* Description */}
+        <p
+          className="text-[14px] font-normal leading-[1.5] text-[#1f1f1f] tracking-[-0.02em] transition-opacity duration-300 group-hover:opacity-50"
+          style={{ fontFamily: "var(--font-inter)" }}
+        >
+          {item.description}
+        </p>
 
-          {/* Read more */}
-          <div className="group flex items-center gap-[10px] border-b border-[#1f1f1f] pb-1 w-fit cursor-pointer hover:gap-4 transition-all duration-300">
-            <span
-              className="text-[14px] font-medium text-[#1f1f1f] tracking-[-0.56px] whitespace-nowrap"
-              style={{ fontFamily: "var(--font-inter)" }}
-            >
-              Read more
-            </span>
-            <svg
-              width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden
-              className="transition-transform duration-300 ease-out group-hover:-translate-y-[3px] group-hover:translate-x-[3px]"
-            >
-              <path d="M4.5 13.5L13.5 4.5M13.5 4.5H7.5M13.5 4.5V10.5" stroke="#1f1f1f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-
+        {/* Read more */}
+        <div className="flex items-center gap-[10px] border-b border-[#1f1f1f] pb-1 w-fit group-hover:gap-4 transition-all duration-300">
+          <span
+            className="text-[14px] font-medium text-black tracking-[-0.04em] whitespace-nowrap"
+            style={{ fontFamily: "var(--font-inter)" }}
+          >
+            Read more
+          </span>
+          <svg
+            width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden
+            className="transition-transform duration-300 ease-out group-hover:-translate-y-[3px] group-hover:translate-x-[3px]"
+          >
+            <path d="M4.5 13.5L13.5 4.5M13.5 4.5H7.5M13.5 4.5V10.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </div>
+
       </div>
+
+      {/* Image — right, large */}
+      {item.img && (
+        <div className="w-full md:w-[500px] md:shrink-0 aspect-[3/4] overflow-hidden">
+          <img
+            src={item.img}
+            alt=""
+            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          />
+        </div>
+      )}
 
     </div>
   );

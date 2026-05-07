@@ -211,22 +211,22 @@ export default async function ServicesPage() {
 
 function ServiceRow({ svc, index }: { svc: ServiceItem; index: number }) {
   return (
-    <div className="flex flex-col gap-4 md:gap-6">
+    <div className="group flex flex-col gap-4 md:gap-6 cursor-pointer">
 
-      {/* Number + full-width divider */}
+      {/* Number + divider — half-width at rest, full on hover */}
       <div className="flex flex-col gap-[9px]">
         <p
-          className="text-[14px] font-normal leading-[1.1] text-white uppercase"
+          className="text-[14px] font-normal leading-[1.1] text-white uppercase transition-opacity duration-300 group-hover:opacity-40"
           style={{ fontFamily: "var(--font-geist-mono)" }}
         >
           [ {index + 1} ]
         </p>
-        <div className="w-full border-t border-white" />
+        <div className="w-1/2 group-hover:w-full border-t border-white transition-[width] duration-500 ease-out" />
       </div>
 
-      {/* Title */}
+      {/* Title — nudges right on hover */}
       <p
-        className="text-[36px] md:text-[64px] font-bold italic leading-[1.0] text-white uppercase tracking-[-0.04em]"
+        className="text-[36px] md:text-[64px] font-bold italic leading-[1.0] text-white uppercase tracking-[-0.04em] transition-transform duration-300 ease-out group-hover:translate-x-4"
         style={{ fontFamily: "var(--font-inter)" }}
       >
         {svc.title}
@@ -235,13 +235,13 @@ function ServiceRow({ svc, index }: { svc: ServiceItem; index: number }) {
       {/* Image + right column — stacked mobile, side-by-side desktop */}
       <div className="flex flex-col gap-6 md:flex-row md:gap-8 md:items-start">
 
-        {/* Image */}
+        {/* Image — zooms on hover */}
         {svc.img && (
           <div className="w-full md:w-[480px] md:shrink-0 aspect-[4/3] overflow-hidden">
             <img
               src={svc.img}
               alt=""
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             />
           </div>
         )}
@@ -249,19 +249,13 @@ function ServiceRow({ svc, index }: { svc: ServiceItem; index: number }) {
         {/* Description + deliverables */}
         <div className="flex flex-col gap-6 flex-1">
 
-          {/* Description in corner brackets */}
-          <div className="relative p-3">
-            <span className="absolute top-0 left-0 w-4 h-4 border-t border-l border-white" />
-            <span className="absolute top-0 right-0 w-4 h-4 border-t border-r border-white" />
-            <span className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-white" />
-            <span className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-white" />
-            <p
-              className="text-[14px] font-normal leading-[1.4] text-white tracking-[-0.04em]"
-              style={{ fontFamily: "var(--font-inter)" }}
-            >
-              {svc.description}
-            </p>
-          </div>
+          {/* Description — fades on hover, no brackets */}
+          <p
+            className="text-[14px] font-normal leading-[1.4] text-white tracking-[-0.04em] transition-opacity duration-300 group-hover:opacity-50"
+            style={{ fontFamily: "var(--font-inter)" }}
+          >
+            {svc.description}
+          </p>
 
           {/* Deliverables */}
           {svc.deliverables?.length > 0 && (

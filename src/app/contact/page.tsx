@@ -3,7 +3,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import type { SiteSettings } from "@/components/ContactModal";
 
-const HERO_BG = "/hero-image-5.png";
 const SETTINGS_QUERY = `*[_type == "siteSettings"][0]`;
 
 export default async function ContactPage() {
@@ -15,59 +14,25 @@ export default async function ContactPage() {
       <main className="relative z-[1]">
 
         {/* ── Hero ── */}
-        <section
-          className="
-            relative overflow-hidden flex flex-col
-            h-[635px] px-4 pb-6
-            md:h-screen md:justify-start md:px-0 md:pb-0
-          "
-        >
-          <img
-            src={HERO_BG}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 size-full object-cover object-top pointer-events-none select-none"
-          />
-          <div
-            className="absolute bottom-0 left-0 right-0 h-[349px] backdrop-blur-[10px] bg-[rgba(217,217,217,0.01)]"
-            style={{ maskImage: "linear-gradient(to bottom, transparent 0%, black 40%)" }}
-          />
-          <div
-            className="
-              relative mt-auto flex flex-col items-center w-full gap-4
-              md:mt-[240px] md:flex-none md:justify-start md:h-auto md:px-8 md:gap-0
-            "
-            style={{ fontFamily: "var(--font-inter)" }}
-          >
-            <div className="relative w-full md:pb-[15px]">
-              <div className="flex items-center justify-center w-full -mb-3 md:justify-start md:pl-[18px] md:-mb-[15px]">
-                <p
-                  className="text-[14px] font-normal uppercase text-white mix-blend-overlay leading-[1.1]"
-                  style={{ fontFamily: "var(--font-geist-mono)" }}
-                >
-                  [ H.Studio ]
-                </p>
-              </div>
-              <h1
-                className="
-                  w-full text-center text-white mix-blend-overlay font-medium capitalize
-                  text-[26vw] tracking-[-0.07em] leading-[0.85]
-                  md:text-[13.75vw] md:leading-[1.1] md:-mb-[15px] md:whitespace-nowrap
-                "
+        <section className="bg-white px-4 pt-[120px] pb-8 md:px-8 md:pt-[160px] md:pb-[48px]">
+          <div style={{ fontFamily: "var(--font-inter)" }}>
+            <div className="flex items-center justify-center w-full mb-1 md:justify-start md:pl-[18px]">
+              <p
+                className="text-[14px] font-normal uppercase text-[#1f1f1f] leading-[1.1]"
+                style={{ fontFamily: "var(--font-geist-mono)" }}
               >
-                Contact
-              </h1>
+                [ H.Studio ]
+              </p>
             </div>
-            <div className="flex w-full justify-start md:justify-end">
-              <div className="flex flex-col gap-[17px] w-full md:w-[294px]">
-                <p
-                  className="text-[14px] font-bold italic uppercase leading-[1.1] text-[#1f1f1f]"
-                  style={{ letterSpacing: "-0.56px" }}
-                >
-                  {s?.contactSubtext ?? "Have an idea? Let's build something great together."}
-                </p>
-              </div>
-            </div>
+            <h1
+              className="
+                w-full text-center text-black font-medium capitalize
+                text-[26vw] tracking-[-0.07em] leading-[0.85]
+                md:text-[13.75vw] md:leading-[1.0] md:whitespace-nowrap
+              "
+            >
+              Contact
+            </h1>
           </div>
         </section>
 
@@ -77,9 +42,9 @@ export default async function ContactPage() {
 
             {/* Left — info */}
             <div className="flex flex-col gap-8 md:w-[40%] md:pr-16">
-              <div className="flex flex-col gap-3 items-end w-full mb-2">
+              <div className="flex flex-col gap-3 items-start w-full mb-2">
                 <p
-                  className="text-[14px] font-normal leading-[1.1] text-[#1f1f1f] uppercase text-right"
+                  className="text-[14px] font-normal leading-[1.1] text-[#1f1f1f] uppercase"
                   style={{ fontFamily: "var(--font-geist-mono)" }}
                 >
                   [ get in touch ]
@@ -93,15 +58,6 @@ export default async function ContactPage() {
               >
                 {s?.contactHeading ?? "Let's create something great."}
               </p>
-
-              {s?.contactSubtext && (
-                <p
-                  className="text-[14px] font-normal leading-[1.4] text-[#1f1f1f] tracking-[-0.04em] max-w-[320px]"
-                  style={{ fontFamily: "var(--font-inter)" }}
-                >
-                  {s.contactSubtext}
-                </p>
-              )}
 
               <div className="flex flex-col gap-3 mt-4">
                 {s?.email && (
@@ -125,22 +81,6 @@ export default async function ContactPage() {
                 )}
               </div>
 
-              <div className="flex gap-5 flex-wrap">
-                {[
-                  s?.instagram && "Instagram",
-                  s?.facebook  && "Facebook",
-                  s?.twitter   && "X.com",
-                  s?.linkedin  && "LinkedIn",
-                ].filter(Boolean).map((social) => (
-                  <span
-                    key={social as string}
-                    className="text-[14px] font-normal text-[#1f1f1f] uppercase tracking-[-0.04em] hover:opacity-60 transition-opacity cursor-pointer"
-                    style={{ fontFamily: "var(--font-inter)" }}
-                  >
-                    {social}
-                  </span>
-                ))}
-              </div>
             </div>
 
             {/* Divider */}

@@ -1,6 +1,9 @@
 import Navbar from "@/components/Navbar";
 import Button from "@/components/Button";
 import FooterReveal from "@/components/FooterReveal";
+import AboutAnimation from "@/components/AboutAnimation";
+import AboutPhotoCurtain from "@/components/AboutPhotoCurtain";
+import AboutBioReveal from "@/components/AboutBioReveal";
 
 const ABOUT_PHOTO =
   "https://www.figma.com/api/mcp/asset/998407b9-a4cb-4e35-83c8-4078be6273f0";
@@ -28,6 +31,9 @@ export default function AboutPage() {
     <>
       <Navbar />
       <main className="relative z-[1]">
+        <AboutAnimation />
+        <AboutPhotoCurtain />
+        <AboutBioReveal />
 
         {/* ── Hero ── */}
         <section className="bg-white px-4 pt-[120px] pb-8 md:px-8 md:pt-[160px] md:pb-[48px]">
@@ -97,34 +103,34 @@ export default function AboutPage() {
           </div>
 
           {/* Desktop */}
-          <div className="hidden md:flex flex-col gap-2 w-full uppercase" style={{ fontFamily: "var(--font-inter)" }}>
+          <div data-about-text className="hidden md:flex flex-col gap-2 w-full uppercase" style={{ fontFamily: "var(--font-inter)" }}>
             <div className="flex gap-3 items-start">
-              <p className="text-[96px] font-light tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
+              <p data-about-line className="text-[96px] font-light tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
                 Creative director&nbsp;&nbsp;&nbsp;/
               </p>
-              <span className="text-[14px] font-normal leading-[1.1] mt-1" style={{ fontFamily: "var(--font-geist-mono)" }}>
+              <span data-about-line className="text-[14px] font-normal leading-[1.1] mt-1" style={{ fontFamily: "var(--font-geist-mono)" }}>
                 001
               </span>
             </div>
             <div className="pl-[214px]">
-              <p className="text-[96px] font-light tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
+              <p data-about-line className="text-[96px] font-light tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
                 Photographer
               </p>
             </div>
             <div className="pl-[610px]">
-              <p className="text-[96px] font-light tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
+              <p data-about-line className="text-[96px] font-light tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
                 Born <span style={{ fontFamily: "var(--font-playfair)", fontStyle: "italic" }}>&</span> raised
               </p>
             </div>
-            <p className="text-[96px] font-light tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
+            <p data-about-line className="text-[96px] font-light tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
               on the south side
             </p>
             <div className="pl-[606px]">
-              <p className="text-[96px] font-light tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
+              <p data-about-line className="text-[96px] font-light tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
                 of chicago.
               </p>
             </div>
-            <p className="text-center text-[14px] font-normal leading-[1.1] mt-5" style={{ fontFamily: "var(--font-geist-mono)" }}>
+            <p data-about-line className="text-center text-[14px] font-normal leading-[1.1] mt-5" style={{ fontFamily: "var(--font-geist-mono)" }}>
               [ creative freelancer ]
             </p>
           </div>
@@ -183,6 +189,7 @@ export default function AboutPage() {
                 </p>
                 <div className="relative w-[436px] h-[614px] bg-black overflow-hidden">
                   <img
+                    id="about-photo-img"
                     src={ABOUT_PHOTO}
                     alt=""
                     className="block w-full h-full object-cover object-center"
