@@ -1,9 +1,20 @@
 import { client } from "@/sanity/lib/client";
-import MobileMenu from "@/components/MobileMenu";
+import Navbar from "@/components/Navbar";
+import Button from "@/components/Button";
+import HeroParallax from "@/components/HeroParallax";
+import AboutAnimation from "@/components/AboutAnimation";
+import AboutPhotoCurtain from "@/components/AboutPhotoCurtain";
+import AboutBioDrift from "@/components/AboutBioDrift";
+import FullbleedBlur from "@/components/FullbleedBlur";
+import TestimonialsParallax from "@/components/TestimonialsParallax";
+import Footer from "@/components/Footer";
+import TestimonialCarousel from "@/components/TestimonialCarousel";
+import NewsCarousel from "@/components/NewsCarousel";
+import NewsCard from "@/components/NewsCard";
+import ProjectCard from "@/components/ProjectCard";
+import WorkCTA from "@/components/WorkCTA";
 
 const HERO_BG = "/hero-image-5.png";
-
-const NAV_LINKS = ["About", "Services", "Projects", "News", "Contact"];
 
 const ABOUT_PHOTO =
   "https://www.figma.com/api/mcp/asset/998407b9-a4cb-4e35-83c8-4078be6273f0";
@@ -11,12 +22,6 @@ const ABOUT_PHOTO =
 const FULLBLEED_PHOTO =
   "https://www.figma.com/api/mcp/asset/f78bd178-5dda-4536-81eb-66bd9fb6ca7d";
 
-const SERVICES = [
-  { num: "[ 1 ]", title: "Brand Discovery",    img: "https://www.figma.com/api/mcp/asset/b3cc421c-e63d-4d23-8de2-a83e2943033f" },
-  { num: "[ 2 ]", title: "Web design & Dev",   img: "https://www.figma.com/api/mcp/asset/e0e3f9c2-5556-4eff-acc5-b77136283f60" },
-  { num: "[ 3 ]", title: "Marketing",          img: "https://www.figma.com/api/mcp/asset/c488ae2d-94b8-483c-87ec-5aee4f90fda6" },
-  { num: "[ 4 ]", title: "Photography",        img: "https://www.figma.com/api/mcp/asset/b9b1068a-ee07-420d-ab74-dc58937c7411" },
-] as const;
 
 const TESTIMONIALS = [
   {
@@ -45,16 +50,41 @@ const TESTIMONIALS = [
   },
 ] as const;
 
-const NEWS_ITEMS = [
-  { img: "https://www.figma.com/api/mcp/asset/fc9b121d-db2d-41fe-bdca-095e2ed012de", offset: false },
-  { img: "https://www.figma.com/api/mcp/asset/fdfb11e8-eada-42a3-8166-7ae57f93d50a", offset: true  },
-  { img: "https://www.figma.com/api/mcp/asset/c83bcdf9-5a2f-4a56-b482-d209237ecc6f", offset: false },
-] as const;
+type NewsItem = {
+  _id: string;
+  title: string;
+  description: string;
+  img: string | null;
+  category: string | null;
+};
 
-const NEWS_DESC = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+const NEWS_QUERY = `*[_type == "newsItem"] | order(order asc)[0...3] {
+  _id,
+  title,
+  description,
+  "img": select(
+    defined(coverImage.asset) => coverImage.asset->url,
+    coverImageUrl
+  ),
+  category
+}`;
 
-const SERVICE_DESC =
-  "We are a creative studio that loves making beautiful websites and premium products. We've won some awards for our work. We're really good at creating brands, designing cool stuff, and making things work just right.";
+type ServiceItem = {
+  _id: string;
+  title: string;
+  description: string;
+  img: string | null;
+};
+
+const SERVICE_QUERY = `*[_type == "service"] | order(order asc) {
+  _id,
+  title,
+  description,
+  "img": select(
+    defined(coverImage.asset) => coverImage.asset->url,
+    coverImageUrl
+  )
+}`;
 
 type PortfolioItem = {
   _id: string;
@@ -78,13 +108,19 @@ const PORTFOLIO_QUERY = `*[_type == "portfolioItem"] | order(order asc) {
 }`;
 
 export default async function Home() {
-  const projects = await client.fetch<PortfolioItem[]>(PORTFOLIO_QUERY);
+  const [projects, services, news] = await Promise.all([
+    client.fetch<PortfolioItem[]>(PORTFOLIO_QUERY),
+    client.fetch<ServiceItem[]>(SERVICE_QUERY),
+    client.fetch<NewsItem[]>(NEWS_QUERY),
+  ]);
 
   return (
     <>
-    <main>
+    <Navbar />
+    <main className="relative z-[1]">
       {/* ── Hero ── */}
       <section
+        id="hero-section"
         className="
           relative overflow-hidden flex flex-col
           h-[635px] px-4 pb-6
@@ -93,11 +129,14 @@ export default async function Home() {
       >
         {/* Background photo */}
         <img
+          id="hero-bg"
           src={HERO_BG}
           alt=""
           aria-hidden
           className="absolute inset-0 size-full object-cover object-top pointer-events-none select-none"
         />
+
+        <HeroParallax />
 
         {/* Frosted glass bar — bottom 349px, fades in upward via mask */}
         <div
@@ -105,37 +144,6 @@ export default async function Home() {
           style={{ maskImage: "linear-gradient(to bottom, transparent 0%, black 40%)" }}
         />
 
-        {/* ── Navbar ── */}
-        <nav
-          className="relative z-10 flex items-center justify-between py-6 md:px-8 md:h-[89px] md:py-0"
-          style={{ fontFamily: "var(--font-inter)" }}
-        >
-          <span className="font-semibold text-base capitalize tracking-[-0.04em] text-black">
-            H.Studio
-          </span>
-
-          {/* Mobile: hamburger + overlay (client component) */}
-          <MobileMenu />
-
-          {/* Desktop: nav links */}
-          <ul className="hidden md:flex items-center gap-14 list-none font-semibold text-base capitalize tracking-[-0.04em] text-black">
-            {NAV_LINKS.map((link) => (
-              <li key={link}>
-                <a
-                  href={`#${link.toLowerCase()}`}
-                  className="hover:opacity-70 transition-opacity"
-                >
-                  {link}
-                </a>
-              </li>
-            ))}
-          </ul>
-
-          {/* Desktop: CTA */}
-          <button className="hidden md:flex items-center justify-center bg-black text-white text-[14px] font-medium tracking-[-0.04em] px-4 py-3 rounded-[24px]">
-            Let&apos;s talk
-          </button>
-        </nav>
 
         {/* ── Hero content ── */}
         <div
@@ -150,6 +158,7 @@ export default async function Home() {
             {/* "[ Hello i'm ]" — centered mobile, left-padded desktop */}
             <div className="flex items-center justify-center w-full -mb-3 md:justify-start md:pl-[18px] md:-mb-[15px]">
               <p
+                id="hero-hello"
                 className="text-[14px] font-normal uppercase text-white mix-blend-overlay leading-[1.1]"
                 style={{ fontFamily: "var(--font-geist-mono)" }}
               >
@@ -165,10 +174,10 @@ export default async function Home() {
                 md:text-[13.75vw] md:leading-[1.1] md:-mb-[15px] md:whitespace-nowrap
               "
             >
-              <span>Harvey</span>
+              <span id="hero-harvey" className="inline-block">Harvey</span>
               <span className="hidden md:inline">&nbsp;&nbsp;&nbsp;</span>
               <span className="md:hidden"> </span>
-              <span>Specter</span>
+              <span id="hero-specter" className="inline-block">Specter</span>
             </h1>
           </div>
 
@@ -186,12 +195,9 @@ export default async function Home() {
                 and art group specializing in branding, web design and
                 engineering.
               </p>
-              <button
-                className="flex items-center justify-center bg-black text-white text-[14px] font-medium px-4 py-3 rounded-[24px] w-fit"
-                style={{ letterSpacing: "-0.56px" }}
-              >
+              <Button variant="dark" className="w-fit" style={{ letterSpacing: "-0.56px" }}>
                 Let&apos;s talk
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -199,6 +205,7 @@ export default async function Home() {
 
       {/* ── About / Identity ── */}
       <section id="about" className="bg-[#F5F5F4] px-4 py-12 md:px-8 md:py-[120px]">
+        <AboutAnimation />
 
         {/* Header: label + divider */}
         <div className="flex flex-col gap-3 items-end w-full mb-6">
@@ -247,57 +254,50 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* ── Desktop text block — staggered, 96px ── */}
-        <div
-          className="hidden md:flex flex-col gap-2 w-full uppercase"
-          style={{ fontFamily: "var(--font-inter)" }}
-        >
-          {/* Line 1: A CREATIVE DIRECTOR / + 001 inline */}
-          <div className="flex gap-3 items-start">
-            <p className="text-[96px] font-light text-black tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
-              A creative director&nbsp;&nbsp;&nbsp;/
+        {/* ── Desktop text block — two copies, word-fill scrub ── */}
+        <div data-about-text className="hidden md:flex flex-col gap-[100px] w-full">
+
+          {/* ── Copy 1 ── */}
+          <div className="flex flex-col gap-2 w-full uppercase" style={{ fontFamily: "var(--font-inter)" }}>
+            <div className="flex gap-3 items-start">
+              <p data-about-line className="text-[96px] font-light tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
+                A creative director&nbsp;&nbsp;&nbsp;/
+              </p>
+              <span data-about-line className="text-[14px] font-normal leading-[1.1] mt-1" style={{ fontFamily: "var(--font-geist-mono)" }}>
+                001
+              </span>
+            </div>
+            <div className="pl-[214px]">
+              <p data-about-line className="text-[96px] font-light tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
+                Photographer
+              </p>
+            </div>
+            <div className="pl-[610px]">
+              <p data-about-line className="text-[96px] font-light tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
+                Born <span style={{ fontFamily: "var(--font-playfair)", fontStyle: "italic" }}>&</span> raised
+              </p>
+            </div>
+            <p data-about-line className="text-[96px] font-light tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
+              on the south side
             </p>
-            <span className="text-[14px] font-normal leading-[1.1] text-[#1f1f1f] mt-1" style={{ fontFamily: "var(--font-geist-mono)" }}>
-              001
-            </span>
-          </div>
-
-          {/* Line 2: PHOTOGRAPHER — indent 214px */}
-          <div className="pl-[214px]">
-            <p className="text-[96px] font-light text-black tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
-              Photographer
-            </p>
-          </div>
-
-          {/* Line 3: BORN & RAISED — indent 610px */}
-          <div className="pl-[610px]">
-            <p className="text-[96px] font-light text-black tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
-              Born <span style={{ fontFamily: "var(--font-playfair)", fontStyle: "italic" }}>&</span> raised
-            </p>
-          </div>
-
-          {/* Line 4: ON THE SOUTH SIDE — no indent */}
-          <p className="text-[96px] font-light text-black tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
-            on the south side
-          </p>
-
-          {/* Line 5: OF CHICAGO. — indent 606px */}
-          <div className="pl-[606px] w-full">
-            <p className="text-[96px] font-light text-black tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
-              of chicago.
+            <div className="pl-[606px] w-full">
+              <p data-about-line className="text-[96px] font-light tracking-[-0.08em] leading-[0.84] whitespace-nowrap">
+                of chicago.
+              </p>
+            </div>
+            <p data-about-line className="text-center text-[14px] font-normal leading-[1.1] mt-5" style={{ fontFamily: "var(--font-geist-mono)" }}>
+              [ creative freelancer ]
             </p>
           </div>
+
         </div>
 
-        {/* [ creative freelancer ] — centered below text block, desktop only */}
-        <p
-          className="hidden md:block text-center text-[14px] font-normal leading-[1.1] text-[#1f1f1f] uppercase mt-5"
-          style={{ fontFamily: "var(--font-geist-mono)" }}
-        >
-          [ creative freelancer ]
-        </p>
-
       </section>
+
+      <AboutPhotoCurtain />
+      <AboutBioDrift />
+      <FullbleedBlur />
+      <TestimonialsParallax />
 
       {/* ── About / Bio ── */}
       <section className="bg-[#F5F5F4] px-4 py-12 md:px-8 md:py-[80px]">
@@ -350,7 +350,7 @@ export default async function Home() {
           <div className="flex gap-8 items-end w-[983px]">
 
             {/* Text with corner brackets */}
-            <div className="relative flex-1 p-3">
+            <div id="about-bio-text" className="relative flex-1 p-3">
               <span className="absolute top-0 left-0 w-4 h-4 border-t border-l border-[#1f1f1f]" />
               <span className="absolute top-0 right-0 w-4 h-4 border-t border-r border-[#1f1f1f]" />
               <span className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-[#1f1f1f]" />
@@ -371,11 +371,12 @@ export default async function Home() {
               >
                 002
               </p>
-              <div className="w-[436px] h-[614px] overflow-hidden">
+              <div className="relative w-[436px] h-[614px] bg-black overflow-hidden">
                 <img
+                  id="about-photo-img"
                   src={ABOUT_PHOTO}
                   alt=""
-                  className="w-full h-full object-cover object-center"
+                  className="block w-full h-full object-cover object-center"
                 />
               </div>
             </div>
@@ -386,8 +387,9 @@ export default async function Home() {
       </section>
 
       {/* ── Full-bleed photo — 565px mobile / 900px desktop ── */}
-      <section className="relative w-full h-[565px] md:h-[900px] overflow-hidden">
+      <section id="fullbleed-section" className="relative w-full h-[565px] md:h-[900px] overflow-hidden" data-nav-dark>
         <img
+          id="fullbleed-img"
           src={FULLBLEED_PHOTO}
           alt=""
           className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
@@ -397,6 +399,7 @@ export default async function Home() {
       {/* ── Services ── */}
       <section
         id="services"
+        data-nav-dark
         className="bg-black flex flex-col px-4 py-12 gap-8 md:px-8 md:py-[80px] md:gap-[48px]"
       >
         {/* [ services ] label */}
@@ -407,50 +410,50 @@ export default async function Home() {
           [ services ]
         </p>
 
-        {/* [4] Deliverables — 32px mobile / 96px desktop */}
+        {/* [N] Deliverables — 32px mobile / 96px desktop */}
         <div
           className="flex items-center justify-between w-full uppercase text-white font-light tracking-[-0.08em] leading-none whitespace-nowrap
                      text-[32px] md:text-[96px]"
           style={{ fontFamily: "var(--font-inter)" }}
         >
-          <span>[4]</span>
+          <span>[{services.length}]</span>
           <span>Deliverables</span>
         </div>
 
         {/* Service list */}
         <div className="flex flex-col gap-[48px]">
-          {SERVICES.map(({ num, title, img }) => (
-            <div key={num} className="flex flex-col gap-3 md:gap-[9px]">
+          {services.map((svc, i) => (
+            <div key={svc._id} className="group flex flex-col gap-3 md:gap-[9px] cursor-pointer">
 
               {/* Number + divider */}
               <div className="flex flex-col gap-[9px]">
                 <p
-                  className="text-[14px] font-normal leading-[1.1] text-white uppercase"
+                  className="text-[14px] font-normal leading-[1.1] text-white uppercase transition-opacity duration-300 group-hover:opacity-40"
                   style={{ fontFamily: "var(--font-geist-mono)" }}
                 >
-                  {num}
+                  [ {i + 1} ]
                 </p>
-                <div className="w-full border-t border-white" />
+                <div className="w-1/2 group-hover:w-full border-t border-white transition-[width] duration-500 ease-out" />
               </div>
 
               {/* Mobile: title → description → image stacked
                   Desktop: title left | description + image right */}
               <div className="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-start md:justify-between">
                 <p
-                  className="text-[36px] font-bold italic leading-[1.1] text-white uppercase tracking-[-0.04em] whitespace-nowrap"
+                  className="text-[36px] font-bold italic leading-[1.1] text-white uppercase tracking-[-0.04em] whitespace-nowrap transition-transform duration-300 ease-out group-hover:translate-x-4"
                   style={{ fontFamily: "var(--font-inter)" }}
                 >
-                  {title}
+                  {svc.title}
                 </p>
                 <div className="flex flex-col gap-4 md:flex-row md:gap-6 md:items-start">
                   <p
-                    className="text-[14px] font-normal leading-[1.3] text-white tracking-[-0.04em] w-full md:w-[393px]"
+                    className="text-[14px] font-normal leading-[1.3] text-white tracking-[-0.04em] w-full md:w-[393px] transition-opacity duration-300 group-hover:opacity-50"
                     style={{ fontFamily: "var(--font-inter)" }}
                   >
-                    {SERVICE_DESC}
+                    {svc.description}
                   </p>
                   <div className="size-[151px] shrink-0 overflow-hidden">
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img src={svc.img ?? ""} alt="" className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110" />
                   </div>
                 </div>
               </div>
@@ -475,7 +478,7 @@ export default async function Home() {
               <p>Work</p>
             </div>
             <span className="text-[14px] font-normal leading-[1.1] text-[#1f1f1f]" style={{ fontFamily: "var(--font-geist-mono)" }}>
-              004
+              {String(projects.length).padStart(3, "0")}
             </span>
           </div>
         </div>
@@ -489,13 +492,14 @@ export default async function Home() {
               tags={project.tags}
               img={project.img ?? ""}
               tall={false}
+              link={project.link}
               mobile
             />
           ))}
           <WorkCTA />
         </div>
 
-        {/* ── Desktop layout: flex-col gap-[61px] matching Figma node 1:111 ── */}
+        {/* ── Desktop layout ── */}
         <div className="hidden md:flex flex-col gap-[61px] w-full">
 
           {/* Header row */}
@@ -506,7 +510,7 @@ export default async function Home() {
                 <p className="leading-[0.86]">Work</p>
               </div>
               <span className="text-[14px] font-normal leading-[1.1] text-[#1f1f1f]" style={{ fontFamily: "var(--font-geist-mono)" }}>
-                004
+                {String(projects.length).padStart(3, "0")}
               </span>
             </div>
             <div className="flex items-center justify-center w-[15px] h-[110px]">
@@ -520,11 +524,11 @@ export default async function Home() {
           <div className="flex gap-6 items-end w-full">
             <div className="flex-1 flex flex-col">
               {projects[0] && (
-                <ProjectCard title={projects[0].title} tags={projects[0].tags} img={projects[0].img ?? ""} tall={projects[0].tall} />
+                <ProjectCard title={projects[0].title} tags={projects[0].tags} img={projects[0].img ?? ""} tall={projects[0].tall} link={projects[0].link} />
               )}
               {projects[1] && (
                 <div className="mt-[80px]">
-                  <ProjectCard title={projects[1].title} tags={projects[1].tags} img={projects[1].img ?? ""} tall={projects[1].tall} />
+                  <ProjectCard title={projects[1].title} tags={projects[1].tags} img={projects[1].img ?? ""} tall={projects[1].tall} link={projects[1].link} />
                 </div>
               )}
               <div className="mt-[80px]">
@@ -533,10 +537,10 @@ export default async function Home() {
             </div>
             <div className="flex-1 flex flex-col gap-[117px] pt-[240px]">
               {projects[2] && (
-                <ProjectCard title={projects[2].title} tags={projects[2].tags} img={projects[2].img ?? ""} tall={projects[2].tall} />
+                <ProjectCard title={projects[2].title} tags={projects[2].tags} img={projects[2].img ?? ""} tall={projects[2].tall} link={projects[2].link} />
               )}
               {projects[3] && (
-                <ProjectCard title={projects[3].title} tags={projects[3].tags} img={projects[3].img ?? ""} tall={projects[3].tall} />
+                <ProjectCard title={projects[3].title} tags={projects[3].tags} img={projects[3].img ?? ""} tall={projects[3].tall} link={projects[3].link} />
               )}
             </div>
           </div>
@@ -546,7 +550,7 @@ export default async function Home() {
       </section>
 
       {/* ── Testimonials ── */}
-      <section className="relative bg-[#F5F5F4] px-4 py-16 md:flex md:flex-col md:items-center md:justify-center md:overflow-hidden md:py-[120px] md:min-h-[900px]">
+      <section id="testimonials-section" className="relative bg-[#F5F5F4] px-4 py-16 md:flex md:flex-col md:items-center md:justify-center md:overflow-hidden md:py-[120px] md:min-h-[900px]">
 
         {/*
           Desktop layer order mirrors Figma exactly (DOM order = z order):
@@ -557,10 +561,11 @@ export default async function Home() {
 
         {/* 1. Lukas — behind heading */}
         <div
+          id="tc-lukas"
           className="hidden md:flex absolute items-center justify-center"
           style={{ left: 676, top: 272, width: 361.958, height: 203.867 }}
         >
-          <div style={{ transform: "rotate(2.9deg)" }}>
+          <div className="group [transform:rotate(2.9deg)] hover:[transform:rotate(0deg)] transition-transform duration-300 ease-out cursor-pointer">
             <TestimonialCard {...TESTIMONIALS[1]} />
           </div>
         </div>
@@ -576,50 +581,38 @@ export default async function Home() {
           Testimonials
         </p>
 
-        {/* Mobile: horizontal scroll strip */}
-        <div className="md:hidden -mx-4 mt-8 overflow-x-auto">
-          <div className="flex items-center pl-4 pr-4" style={{ width: "max-content" }}>
-            {TESTIMONIALS.map(({ logo, logoW, logoH, quote, author }, i) => {
-              const mobileRotates = [-3.5, 1.5, -2, 2];
-              return (
-                <div
-                  key={author}
-                  className="flex-none"
-                  style={{ transform: `rotate(${mobileRotates[i]}deg)`, marginRight: i < TESTIMONIALS.length - 1 ? "-10px" : "0" }}
-                >
-                  <TestimonialCard logo={logo} logoW={logoW} logoH={logoH} quote={quote} author={author} />
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        {/* Mobile: dot carousel */}
+        <TestimonialCarousel items={TESTIMONIALS} />
 
         {/* 3. Marko — in front of heading */}
         <div
+          id="tc-marko"
           className="hidden md:flex absolute items-center justify-center"
           style={{ left: 102, top: 142, width: 380.876, height: 295.234 }}
         >
-          <div style={{ transform: "rotate(-6.85deg)" }}>
+          <div className="group [transform:rotate(-6.85deg)] hover:[transform:rotate(0deg)] transition-transform duration-300 ease-out cursor-pointer">
             <TestimonialCard {...TESTIMONIALS[0]} />
           </div>
         </div>
 
         {/* 3. Sarah — in front of heading */}
         <div
+          id="tc-sarah"
           className="hidden md:flex absolute items-center justify-center"
           style={{ left: 305, top: 553, width: 363.132, height: 280.316 }}
         >
-          <div style={{ transform: "rotate(2.23deg)" }}>
+          <div className="group [transform:rotate(2.23deg)] hover:[transform:rotate(0deg)] transition-transform duration-300 ease-out cursor-pointer">
             <TestimonialCard {...TESTIMONIALS[2]} />
           </div>
         </div>
 
         {/* 3. Sofia — in front of heading */}
         <div
+          id="tc-sofia"
           className="hidden md:flex absolute items-center justify-center"
           style={{ left: 987, top: 546, width: 366.766, height: 228.169 }}
         >
-          <div style={{ transform: "rotate(-4.15deg)" }}>
+          <div className="group [transform:rotate(-4.15deg)] hover:[transform:rotate(0deg)] transition-transform duration-300 ease-out cursor-pointer">
             <TestimonialCard {...TESTIMONIALS[3]} />
           </div>
         </div>
@@ -645,15 +638,13 @@ export default async function Home() {
 
           {/* Three cards with vertical dividers */}
           <div className="flex gap-[31px] items-start">
-            <NewsCard img={NEWS_ITEMS[0].img} desc={NEWS_DESC} />
-            <div className="w-px self-stretch bg-black" />
-            <NewsCard img={NEWS_ITEMS[1].img} desc={NEWS_DESC} offset />
-            <div className="w-px self-stretch bg-black" />
-            <NewsCard img={NEWS_ITEMS[2].img} desc={NEWS_DESC} />
+            {news[0] && <NewsCard title={news[0].title} description={news[0].description} img={news[0].img ?? ""} category={news[0].category} />}
+            {news[1] && <><div className="w-px self-stretch bg-black" /><NewsCard title={news[1].title} description={news[1].description} img={news[1].img ?? ""} category={news[1].category} offset /></>}
+            {news[2] && <><div className="w-px self-stretch bg-black" /><NewsCard title={news[2].title} description={news[2].description} img={news[2].img ?? ""} category={news[2].category} /></>}
           </div>
         </div>
 
-        {/* Mobile: heading + horizontal scroll strip */}
+        {/* Mobile: heading + carousel */}
         <div className="md:hidden flex flex-col gap-8">
           <p
             className="text-[32px] font-light text-black uppercase tracking-[-2.56px] leading-[0.86]"
@@ -661,199 +652,17 @@ export default async function Home() {
           >
             Keep up with<br />my latest news<br />&amp; achievements
           </p>
-
-          {/* Horizontal scroll — breaks out of section padding */}
-          <div className="-mx-4 overflow-x-auto">
-            <div className="flex gap-4 pl-4 pr-4" style={{ width: "max-content" }}>
-              {NEWS_ITEMS.map(({ img }, i) => (
-                <div key={i} className="flex flex-col gap-4 shrink-0 w-[300px]" style={{ fontFamily: "var(--font-inter)" }}>
-                  <div className="relative h-[398px] w-[300px] overflow-hidden">
-                    <img src={img} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" />
-                  </div>
-                  <p className="text-[14px] font-normal text-[#1f1f1f] tracking-[-0.56px] leading-[1.3]">
-                    {NEWS_DESC}
-                  </p>
-                  <div className="border-b border-black flex gap-[10px] items-center py-1 shrink-0">
-                    <span className="text-[14px] font-medium text-black tracking-[-0.56px] whitespace-nowrap">Read more</span>
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-                      <path d="M4.5 13.5L13.5 4.5M13.5 4.5H7.5M13.5 4.5V10.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <NewsCarousel items={news.map(n => ({ img: n.img ?? "", title: n.title, description: n.description }))} />
         </div>
 
       </section>
     </main>
 
-    {/* ── Footer ── */}
-    <footer className="bg-black pt-[48px] px-4 md:px-8" style={{ fontFamily: "var(--font-inter)" }}>
-
-      {/* Desktop */}
-      <div className="hidden md:flex flex-col gap-[120px]">
-
-        {/* Top: CTA + social + divider */}
-        <div className="flex flex-col gap-[48px] w-full">
-          <div className="flex items-start justify-between w-full">
-
-            {/* CTA */}
-            <div className="flex flex-col gap-3 w-[298px]">
-              <p className="text-[24px] font-light italic text-white uppercase tracking-[-0.96px] leading-[1.1]">
-                Have a <strong className="font-black not-italic">project</strong> in mind?
-              </p>
-              <button className="border border-white text-white text-[14px] font-medium tracking-[-0.56px] px-4 py-3 rounded-[24px] w-fit">
-                Let&apos;s talk
-              </button>
-            </div>
-
-            {/* Social center */}
-            <div className="text-[18px] font-normal text-white uppercase tracking-[-0.72px] text-center w-[298px]">
-              <p className="leading-[1.1]">Facebook</p>
-              <p className="leading-[1.1]">Instagram</p>
-            </div>
-
-            {/* Social right */}
-            <div className="text-[18px] font-normal text-white uppercase tracking-[-0.72px] text-right w-[298px]">
-              <p className="leading-[1.1]">X.com</p>
-              <p className="leading-[1.1]">Linkedin</p>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="w-full border-t border-white" />
-        </div>
-
-        {/* Bottom: giant brand + legal */}
-        <div className="flex items-end justify-between w-full">
-
-          {/* H.Studio clipped box */}
-          <div className="relative h-[219px] overflow-hidden shrink-0 w-[1093px]">
-            <p
-              className="absolute whitespace-nowrap text-[290px] font-semibold text-white capitalize tracking-[-17.4px] leading-[0.8]"
-              style={{ top: 0, left: "5px" }}
-            >
-              H.Studio
-            </p>
-            {/* [ Coded By Claude ] — rotated vertical label on far left */}
-            <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center w-[15px]">
-              <p
-                className="-rotate-90 whitespace-nowrap text-[14px] font-normal text-white uppercase leading-[1.1]"
-                style={{ fontFamily: "var(--font-geist-mono)" }}
-              >
-                [ Coded By Claude ]
-              </p>
-            </div>
-          </div>
-
-          {/* Legal links */}
-          <div className="flex gap-[34px] items-center pb-8 text-[12px] font-normal text-white uppercase tracking-[-0.48px] whitespace-nowrap">
-            <a href="#" className="underline">Licences</a>
-            <a href="#" className="underline">Privacy policy</a>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile */}
-      <div className="md:hidden flex flex-col gap-[48px]">
-
-        {/* CTA + socials + divider */}
-        <div className="flex flex-col gap-[24px]">
-          <div className="flex flex-col gap-[16px]">
-
-            {/* CTA */}
-            <div className="flex flex-col gap-3">
-              <p className="text-[24px] font-light italic text-white uppercase tracking-[-0.96px] leading-[1.1]">
-                Have a <strong className="font-black not-italic">project</strong> in mind?
-              </p>
-              <button className="border border-white text-white text-[14px] font-medium tracking-[-0.56px] px-4 py-3 rounded-[24px] w-fit">
-                Let&apos;s talk
-              </button>
-            </div>
-
-            {/* Socials — vertical stack */}
-            {["Facebook", "Instagram", "X.com", "Linkedin"].map((s) => (
-              <p key={s} className="text-[18px] font-normal text-white uppercase tracking-[-0.72px] leading-[1.1]">{s}</p>
-            ))}
-          </div>
-
-          {/* Divider */}
-          <div className="w-full border-t border-white" />
-        </div>
-
-        {/* Legal + coded-by + H.Studio */}
-        <div className="flex flex-col gap-[16px] h-[150px] items-center w-full whitespace-nowrap">
-
-          {/* Legal */}
-          <div className="flex gap-[34px] items-center pb-8 text-[12px] font-normal text-white uppercase tracking-[-0.48px]">
-            <a href="#" className="underline">Licences</a>
-            <a href="#" className="underline">Privacy policy</a>
-          </div>
-
-          {/* Brand — overflows bottom intentionally */}
-          <div className="flex flex-col gap-3 items-start overflow-clip w-full">
-            <p
-              className="text-[10px] font-normal text-white uppercase leading-[1.1]"
-              style={{ fontFamily: "var(--font-geist-mono)" }}
-            >
-              [ Coded By Claude ]
-            </p>
-            <p className="text-[91.425px] font-semibold text-white capitalize tracking-[-5.4855px] leading-[0.8]">
-              H.Studio
-            </p>
-          </div>
-        </div>
-      </div>
-
-    </footer>
+    <Footer />
     </>
   );
 }
 
-/* ── Project card ── */
-function ProjectCard({ title, tags, img, tall, mobile = false }: {
-  title: string;
-  tags: string[];
-  img: string;
-  tall: boolean;
-  mobile?: boolean;
-}) {
-  const imgHeight = mobile
-    ? "h-[390px]"
-    : tall ? "h-[744px]" : "h-[699px]";
-
-  return (
-    <div className="flex flex-col gap-[10px]">
-      <div className={`relative w-full overflow-hidden flex flex-col justify-end pb-4 pl-4 ${imgHeight}`}>
-        <img src={img} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" />
-        <div className="relative flex gap-3 items-center">
-          {tags.map(tag => (
-            <span
-              key={tag}
-              className="backdrop-blur-[10px] bg-[rgba(255,255,255,0.3)] px-2 py-1 rounded-[24px] text-[14px] font-medium text-[#111] tracking-[-0.04em] whitespace-nowrap"
-              style={{ fontFamily: "var(--font-inter)" }}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
-      <div className="flex items-center justify-between">
-        <p
-          className="font-black leading-[1.1] text-black uppercase tracking-[-0.04em] whitespace-nowrap
-                     text-[24px] md:text-[36px]"
-          style={{ fontFamily: "var(--font-inter)" }}
-        >
-          {title}
-        </p>
-        <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden className="shrink-0 size-5 md:size-8 [stroke-width:2.5] md:[stroke-width:4]">
-          <path d="M8 24L24 8M24 8H12M24 8V20" stroke="black" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
-    </div>
-  );
-}
 
 /* ── Testimonial card ── */
 function TestimonialCard({ logo, logoW, logoH, quote, author }: {
@@ -865,7 +674,11 @@ function TestimonialCard({ logo, logoW, logoH, quote, author }: {
 }) {
   return (
     <div
-      className="bg-[#f1f1f1] border border-[#ddd] rounded-[4px] p-6 flex flex-col gap-4 w-[260px] md:w-[353px]"
+      className="bg-[#f1f1f1] border border-[#ddd] rounded-[4px] p-6 flex flex-col gap-4 w-[260px] md:w-[353px]
+                 transition-all duration-300 ease-out
+                 group-hover:bg-white group-hover:border-[#bbb]
+                 group-hover:-translate-y-2
+                 group-hover:shadow-[0_24px_64px_rgba(0,0,0,0.14)]"
       style={{ fontFamily: "var(--font-inter)" }}
     >
       <div className="relative shrink-0" style={{ width: logoW, height: logoH }}>
@@ -881,51 +694,4 @@ function TestimonialCard({ logo, logoW, logoH, quote, author }: {
   );
 }
 
-/* ── News card ── */
-function NewsCard({ img, desc, offset = false }: { img: string; desc: string; offset?: boolean }) {
-  return (
-    <div
-      className={`flex flex-col gap-4 items-start shrink-0 w-[353px] ${offset ? "pt-[120px]" : "h-[581px]"}`}
-      style={{ fontFamily: "var(--font-inter)" }}
-    >
-      <div className="relative h-[469px] w-full shrink-0 overflow-hidden">
-        <img src={img} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" />
-      </div>
-      <p className={`text-[14px] font-normal text-[#1f1f1f] tracking-[-0.56px] leading-[1.3] ${offset ? "" : "flex-1"}`}>
-        {desc}
-      </p>
-      <div className="border-b border-black flex gap-[10px] items-center py-1 shrink-0">
-        <span className="text-[14px] font-medium text-black tracking-[-0.56px] whitespace-nowrap">Read more</span>
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-          <path d="M4.5 13.5L13.5 4.5M13.5 4.5H7.5M13.5 4.5V10.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
-    </div>
-  );
-}
 
-/* ── CTA block with corner brackets ── */
-function WorkCTA() {
-  return (
-    <div className="relative flex-none md:w-[465px] p-3">
-      <span className="absolute top-0 left-0 w-4 h-4 border-t border-l border-[#1f1f1f]" />
-      <span className="absolute top-0 right-0 w-4 h-4 border-t border-r border-[#1f1f1f]" />
-      <span className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-[#1f1f1f]" />
-      <span className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-[#1f1f1f]" />
-      <div className="flex flex-col gap-[10px]">
-        <p
-          className="text-[14px] font-normal italic leading-[1.3] text-[#1f1f1f] tracking-[-0.04em]"
-          style={{ fontFamily: "var(--font-inter)" }}
-        >
-          Discover how my creativity transforms ideas into impactful digital experiences —<br className="md:hidden" /> schedule a call with me to get started.
-        </p>
-        <button
-          className="self-start bg-black text-white text-[14px] font-medium px-4 py-3 rounded-[24px] tracking-[-0.04em]"
-          style={{ fontFamily: "var(--font-inter)" }}
-        >
-          Let&apos;s talk
-        </button>
-      </div>
-    </div>
-  );
-}
